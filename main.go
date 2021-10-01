@@ -1,16 +1,13 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	myEnv := importEnv()
-	fmt.Println(myEnv)
-
-	connMongo(myEnv)
+	mongoClient := mongoConnClient()
+	mongoCollection := mongoAccessCollection("hub_data", mongoClient)
+	mongoInsertOne(mongoCollection)
 
 	r := gin.New()
 
