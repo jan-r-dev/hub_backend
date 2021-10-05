@@ -6,8 +6,14 @@ import (
 
 func main() {
 	mongoClient := mongoConnClient()
-	mongoCollection := mongoAccessCollection("hub_data", mongoClient)
-	mongoInsertOne(mongoCollection)
+
+	// Specify collection name
+	mongoCollection := mongoAccessCollection("projects", mongoClient)
+
+	// Retrieve cursor
+	mongoCursor := mongoFindProjects(mongoCollection)
+
+	mongoPrintCursor(mongoCursor)
 
 	r := gin.New()
 

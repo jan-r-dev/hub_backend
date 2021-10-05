@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -35,7 +36,7 @@ func mongoAccessCollection(c string, client *mongo.Client) *mongo.Collection {
 }
 
 // Operation - Insert one into the collection specified in the argument
-func mongoInsertOne(collection *mongo.Collection) {
+func mongoInsertOne(collection *mongo.Collection, entryPair struct{}) {
 	res, err := collection.InsertOne(context.Background(), bson.M{"hello1": "world2"})
 
 	if err != nil {
@@ -47,7 +48,56 @@ func mongoInsertOne(collection *mongo.Collection) {
 	fmt.Println(id)
 }
 
-// Operation - Find many in the collection according to the specified query
-func mongoFindMany(collection *mongo.Collection, searchString string) {
-	// To be continued ...
+// Operation - Find and return all projects sorted by date (descending)
+
+func mongoFindProjects(collection *mongo.Collection, timestamp string) *mongo.Cursor {
+	// filter by created_on
+	// -1 marks descending, 1 ascending
+	options := options.Find().SetSort(bson.D{primitive.E{Key: "created_on", Value: -1}})
+
+	// Next step - modify the filter
+	cursor, err := collection.Find(context.Background(), bson.D{
+		{"created_on": {""}}}, options)
+	if err != nil {
+		log.Fatal("Error searching the collection: ", err)
+	}
+
+	return cursor
 }
+
+// Cursor - Print all results
+func mongoPrintCursor(c *mongo.Cursor) {
+	var results []bson.M
+	if err := c.All(context.Background(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, result := range results {
+		fmt.Println(result)
+	}
+}
+
+/*
+func e() {
+	var coll *mongo.Collection
+
+	// Find all documents in which the "name" field is "Bob".
+	// Specify the Sort option to sort the returned documents by age in
+	// ascending order.
+	opts := options.Find().SetSort(bson.D{{"aged", 1}})
+	cursor, err := coll.Find(context.TODO(), bson.D{{"name", "Bob"}}, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Get a list of all returned documents and print them out.
+	// See the mongo.Cursor documentation for more examples of using cursors.
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+	for _, result := range results {
+		fmt.Println(result)
+	}
+}
+*/
