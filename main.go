@@ -1,37 +1,30 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
+	"time"
 )
 
 func main() {
-	mongoClient := mongoConnClient()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	// Specify collection name
+	defer cancel()
+	mongoClient := mongoConnClient(ctx)
+
 	mongoCollection := mongoAccessCollection("projects", mongoClient)
 
-	// Retrieve cursor
-	mongoCursor := mongoFindProjects(mongoCollection)
+	mongoFindProjects(ctx, mongoCollection)
 
-	mongoPrintCursor(mongoCursor)
+	// r := gin.New()
 
-	r := gin.New()
+	// r.Use(gin.Logger())
+	// r.Use(gin.Recovery())
 
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
-
-	r.Run()
+	// r.Run()
 }
 
 /* NOTES
 Mongo will be done using https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
 Routing will be done using https://github.com/gin-gonic/gin#installation
-Security will be done using
-
-
-Mongo code:
-
-
-1) Continue setting up the MongoDB connection in mongo.go
-
+Security will be done using lord only knows what
 */
