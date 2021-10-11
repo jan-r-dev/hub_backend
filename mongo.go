@@ -43,6 +43,7 @@ func mongoAccessCollection(c string, client *mongo.Client) *mongo.Collection {
 }
 
 // Operation - Find and return all projects sorted by date (descending)
+//lint:ignore U1000 placeholder
 func mongoFindProjects(ctx context.Context, collection *mongo.Collection) {
 
 	options := options.Find().SetSort(bson.D{primitive.E{Key: "created_on", Value: -1}})
@@ -66,6 +67,36 @@ func mongoFindProjects(ctx context.Context, collection *mongo.Collection) {
 	for _, r := range projects {
 		fmt.Println(r.CreatedOn)
 	}
+}
+
+func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, startPoint time.Time) []Project {
+	options := options.Find().SetSort(bson.D{primitive.E{Key: "created_on", Value: -1}})
+
+	cursor, err := collection.Find(ctx, bson.D{
+		primitive.E{Key: "created_on", Value: bson.D{
+			primitive.E{Key: "$lt", Value: startPoint},
+		},
+		},
+	}, options)
+
+	if err != nil {
+		log.Fatal("Error searching the collection: ", err)
+	}
+
+	var projects []Project
+
+	counter := 0
+	for cursor.Next(ctx) && counter != 3 {
+
+		var project Project
+
+		cursor.Decode(&project)
+		projects = append(projects, project)
+
+		counter += 1
+	}
+
+	return projects
 }
 
 /*
