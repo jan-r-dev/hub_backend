@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,9 +13,9 @@ func getProjects(r *gin.Engine) {
 
 		projects := retrieveProjects(ts)
 
-		for _, r := range projects {
-			fmt.Println(r.CreatedOn)
-		}
+		// for _, r := range projects {
+		// 	fmt.Println(r.CreatedOn)
+		// }
 
 		c.JSON(http.StatusOK, projects)
 	})
