@@ -7,12 +7,17 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	mongoClient := mongoConnClient(ctx)
+
 	r := gin.New()
 
-	getProjects(r)
+	getProjects(r, mongoClient)
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -20,12 +25,9 @@ func main() {
 	r.Run()
 }
 
-func retrieveProjects(ts time.Time) []Project {
+func retrieveProjects(ts time.Time, mongoClient *mongo.Client) []Project {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-
 	defer cancel()
-	mongoClient := mongoConnClient(ctx)
-
 	mongoCollection := mongoAccessCollection("projects", mongoClient)
 
 	//mongoFindProjects(ctx, mongoCollection)
