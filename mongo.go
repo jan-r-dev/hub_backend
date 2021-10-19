@@ -19,6 +19,16 @@ type Project struct {
 	Stack     []string           `json:"stack,omitempty" bson:"stack,omitempty"`
 	Link      string             `json:"link,omitempty" bson:"link,omitempty"`
 	CreatedOn time.Time          `json:"created_on,omitempty" bson:"created_on,omitempty"`
+	ArticleId primitive.ObjectID `json:"article_id,omitempty" bson:"article_id"`
+}
+
+type Article struct {
+	ID       primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Title    string             `json:"title,omitempty" bson:"title,omitempty"`
+	Images   []string           `json:"images,omitempty" bson:"images,omitempty"`
+	Snippets []string           `json:"snippets,omitempty" bson:"snippets,omitempty"`
+	Text     []string           `json:"text,omitempty" bson:"text,omitempty"`
+	Sources  []string           `json:"sources,omitempty" bson:"sources,omitempty"`
 }
 
 // First step - Establish a client
