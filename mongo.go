@@ -109,6 +109,24 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 	return projects
 }
 
+func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleID primitive.ObjectID) Article {
+	cursor, err := collection.Find(ctx, bson.D{
+		primitive.E{Key: "_id", Value: articleID},
+	})
+
+	if err != nil {
+		log.Fatal("Error searching the collection: ", err)
+	}
+
+	var article Article
+
+	for cursor.Next(ctx) {
+		cursor.Decode(&article)
+	}
+
+	return article
+}
+
 /*
 // MISC
 

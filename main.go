@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -18,6 +19,7 @@ func main() {
 	r := gin.New()
 
 	getProjects(r, mongoClient)
+	getArticle(r, mongoClient)
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
@@ -36,6 +38,16 @@ func retrieveProjects(ts time.Time, mongoClient *mongo.Client) []Project {
 	return projects
 }
 
+func retrieveArticle(articleID primitive.ObjectID, mongoClient *mongo.Client) Article {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	mongoCollection := mongoAccessCollection("articles", mongoClient)
+
+	article := mongoFindArticle(ctx, mongoCollection, articleID)
+
+	return article
+}
+
 func createTimestamp(stringTime string) time.Time {
 	i, err := strconv.ParseInt(stringTime, 10, 64)
 
@@ -47,11 +59,3 @@ func createTimestamp(stringTime string) time.Time {
 
 	return tm
 }
-
-//1633698368
-
-/* NOTES
-Mongo will be done using https://pkg.go.dev/go.mongodb.org/mongo-driver/mongo
-Routing will be done using https://github.com/gin-gonic/gin#installation
-Security will be done using lord only knows what
-*/
