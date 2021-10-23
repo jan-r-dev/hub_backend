@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,10 +15,6 @@ func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
 
 		projects := retrieveProjects(ts, mongoClient)
 
-		// for _, r := range projects {
-		// 	fmt.Println(r.CreatedOn)
-		// }
-
 		c.JSON(http.StatusOK, projects)
 	})
 
@@ -31,23 +26,10 @@ func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
 
 		articleID, err := primitive.ObjectIDFromHex(s)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 
 		article := retrieveArticle(articleID, mongoClient)
 		c.JSON(http.StatusOK, article)
 	})
 }
-
-/*
-
-func ObjectIDFromHex(s string) (ObjectID, error)
-
-Use it as follows:
-
-objID, err := primitive.ObjectIDFromHex(hexString)
-if err != nil {
-  panic(err)
-}
-
-*/
