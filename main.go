@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -38,7 +37,7 @@ func retrieveProjects(ts time.Time, mongoClient *mongo.Client) []Project {
 	return projects
 }
 
-func retrieveArticle(articleID primitive.ObjectID, mongoClient *mongo.Client) Article {
+func retrieveArticle(articleID string, mongoClient *mongo.Client) Article {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	mongoCollection := mongoAccessCollection("articles", mongoClient)

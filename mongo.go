@@ -29,6 +29,7 @@ type Article struct {
 	Snippets []string           `json:"snippets,omitempty" bson:"snippets,omitempty"`
 	Text     []string           `json:"text,omitempty" bson:"text,omitempty"`
 	Sources  []string           `json:"sources,omitempty" bson:"sources,omitempty"`
+	Link     string             `json:"link,omitempty" bson:"link,omitempty"`
 }
 
 // First step - Establish a client
@@ -109,9 +110,9 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 	return projects
 }
 
-func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleID primitive.ObjectID) Article {
+func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleId string) Article {
 	cursor, err := collection.Find(ctx, bson.D{
-		primitive.E{Key: "_id", Value: articleID},
+		primitive.E{Key: "link", Value: articleId},
 	})
 
 	if err != nil {

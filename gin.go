@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,15 +20,17 @@ func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
 }
 
 func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
-	r.GET("/articles/:id", func(c *gin.Context) {
-		s := c.Param("id")
+	r.GET("/articles/:articleId", func(c *gin.Context) {
+		articleId := c.Param("articleId")
 
-		articleID, err := primitive.ObjectIDFromHex(s)
-		if err != nil {
-			panic(err)
-		}
-
-		article := retrieveArticle(articleID, mongoClient)
+		article := retrieveArticle(articleId, mongoClient)
 		c.JSON(http.StatusOK, article)
 	})
 }
+
+/*
+	articleId, err := primitive.ObjectIDFromHex(s)
+	if err != nil {
+		panic(err)
+	}
+*/
