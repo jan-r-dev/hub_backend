@@ -23,8 +23,13 @@ func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
 	r.GET("/articles/:articleId", func(c *gin.Context) {
 		articleId := c.Param("articleId")
 
-		article := retrieveArticle(articleId, mongoClient)
-		c.JSON(http.StatusOK, article)
+		article, err := retrieveArticle(articleId, mongoClient)
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, err)
+		} else {
+			c.JSON(http.StatusOK, article)
+		}
 	})
 }
 

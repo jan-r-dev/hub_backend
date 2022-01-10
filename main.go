@@ -37,14 +37,14 @@ func retrieveProjects(ts time.Time, mongoClient *mongo.Client) []Project {
 	return projects
 }
 
-func retrieveArticle(articleID string, mongoClient *mongo.Client) Article {
+func retrieveArticle(articleID string, mongoClient *mongo.Client) (Article, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	mongoCollection := mongoAccessCollection("articles", mongoClient)
 
-	article := mongoFindArticle(ctx, mongoCollection, articleID)
+	article, err := mongoFindArticle(ctx, mongoCollection, articleID)
 
-	return article
+	return article, err
 }
 
 func createTimestamp(stringTime string) time.Time {

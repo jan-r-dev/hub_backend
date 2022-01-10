@@ -110,22 +110,16 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 	return projects
 }
 
-func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleId string) Article {
-	cursor, err := collection.Find(ctx, bson.D{
+func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleId string) (Article, error) {
+	singleResult := collection.FindOne(ctx, bson.D{
 		primitive.E{Key: "link", Value: articleId},
 	})
 
-	if err != nil {
-		log.Fatal("Error searching the collection: ", err)
-	}
-
 	var article Article
 
-	for cursor.Next(ctx) {
-		cursor.Decode(&article)
-	}
+	err := singleResult.Decode(&article)
 
-	return article
+	return article, err
 }
 
 /*
