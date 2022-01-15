@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -51,7 +51,7 @@ func createTimestamp(stringTime string) time.Time {
 	i, err := strconv.ParseInt(stringTime, 10, 64)
 
 	if err != nil {
-		log.Fatal("Error conversion: ", err)
+		fmt.Print("Error conversion: ", err)
 	}
 	tm := time.Unix(i, 0)
 	//fmt.Println(tm)
