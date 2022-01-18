@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -53,34 +52,7 @@ func mongoAccessCollection(c string, client *mongo.Client) *mongo.Collection {
 	return collection
 }
 
-// Operation - Find and return all projects sorted by date (descending)
-//lint:ignore U1000 placeholder
-func mongoFindProjects(ctx context.Context, collection *mongo.Collection) {
-
-	options := options.Find().SetSort(bson.D{primitive.E{Key: "created_on", Value: -1}})
-
-	cursor, err := collection.Find(ctx, bson.D{
-		primitive.E{},
-	}, options)
-	if err != nil {
-		log.Fatal("Error searching the collection: ", err)
-	}
-
-	var projects []Project
-
-	for cursor.Next(ctx) {
-		var project Project
-
-		cursor.Decode(&project)
-		projects = append(projects, project)
-	}
-
-	for _, r := range projects {
-		fmt.Println(r.CreatedOn)
-	}
-}
-
-func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, startPoint time.Time) []Project {
+func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, startPoint time.Time) ([]Project, error) {
 	options := options.Find().SetSort(bson.D{primitive.E{Key: "created_on", Value: -1}})
 
 	cursor, err := collection.Find(ctx, bson.D{
@@ -90,11 +62,11 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 		},
 	}, options)
 
-	if err != nil {
-		log.Fatal("Error searching the collection: ", err)
-	}
-
 	var projects []Project
+
+	if err != nil {
+		return projects, err
+	}
 
 	counter := 0
 	for cursor.Next(ctx) && counter != 3 {
@@ -107,7 +79,7 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 		counter += 1
 	}
 
-	return projects
+	return projects, err
 }
 
 func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleId string) (Article, error) {
@@ -122,21 +94,14 @@ func mongoFindArticle(ctx context.Context, collection *mongo.Collection, article
 	return article, err
 }
 
-/*
-// MISC
-
-// Operation - Insert one into the collection specified in the argument
-func mongoInsertOne(collection *mongo.Collection, entryPair struct{}) {
-	res, err := collection.InsertOne(context.Background(), bson.M{"hello1": "world2"})
+func mongoCountProjects(ctx context.Context, collection *mongo.Collection) (int64, error) {
+	projectCount, err := collection.CountDocuments(ctx, bson.D{
+		primitive.E{},
+	})
 
 	if err != nil {
-		log.Fatal("Error inserting one into collection", err)
+		return projectCount, err
 	}
 
-	id := res.InsertedID
-
-	fmt.Println(id)
+	return projectCount, err
 }
-
-
-*/

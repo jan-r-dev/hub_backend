@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"strconv"
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,44 +16,71 @@ func main() {
 
 	r := gin.New()
 
-	getProjects(r, mongoClient)
-	getArticle(r, mongoClient)
+	go getProjects(r, mongoClient)
+	go getArticle(r, mongoClient)
+	go getProjectCount(r, mongoClient)
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	r.Run()
+	r.Run(":8080")
 }
 
-func retrieveProjects(ts time.Time, mongoClient *mongo.Client) []Project {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	mongoCollection := mongoAccessCollection("projects", mongoClient)
+func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
+	r.GET("/projects/:time", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
 
-	//mongoFindProjects(ctx, mongoCollection)
-	projects := mongoFindThreeProjects(ctx, mongoCollection, ts)
+		ts := createTimestamp(c.Param("time"))
 
-	return projects
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		mongoCollection := mongoAccessCollection("projects", mongoClient)
+
+		projects, err := mongoFindThreeProjects(ctx, mongoCollection, ts)
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, err)
+		} else {
+			c.JSON(http.StatusOK, projects)
+		}
+	})
+
 }
 
-func retrieveArticle(articleID string, mongoClient *mongo.Client) (Article, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	mongoCollection := mongoAccessCollection("articles", mongoClient)
+func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
+	r.GET("/articles/:articleId", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
 
-	article, err := mongoFindArticle(ctx, mongoCollection, articleID)
+		articleId := c.Param("articleId")
 
-	return article, err
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		mongoCollection := mongoAccessCollection("articles", mongoClient)
+
+		article, err := mongoFindArticle(ctx, mongoCollection, articleId)
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, err)
+		} else {
+			c.JSON(http.StatusOK, article)
+		}
+	})
 }
 
-func createTimestamp(stringTime string) time.Time {
-	i, err := strconv.ParseInt(stringTime, 10, 64)
+func getProjectCount(r *gin.Engine, mongoClient *mongo.Client) {
+	r.GET("/projects", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
 
-	if err != nil {
-		fmt.Print("Error conversion: ", err)
-	}
-	tm := time.Unix(i, 0)
-	//fmt.Println(tm)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		mongoCollection := mongoAccessCollection("projects", mongoClient)
 
-	return tm
+		projectCount, err := mongoCountProjects(ctx, mongoCollection)
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, err)
+		} else {
+			c.JSON(http.StatusOK, projectCount)
+		}
+	})
 }
