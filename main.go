@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	mongoClient := mongoConnClient(ctx)
+	mongoClient := connectClientDB(ctx)
 
 	r := gin.New()
 
@@ -31,12 +32,13 @@ func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
 		c.Header("Access-Control-Allow-Origin", "*")
 
 		ts := createTimestamp(c.Param("time"))
+		count, err := strconv.ParseInt(c.Query("count"), 10, 0)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		mongoCollection := mongoAccessCollection("projects", mongoClient)
+		mongoCollection := accessCollectionDB("projects", mongoClient)
 
-		projects, err := mongoFindThreeProjects(ctx, mongoCollection, ts)
+		projects, err := getProjectsFromDB(ctx, mongoCollection, ts, count)
 
 		if err != nil {
 			c.JSON(http.StatusNotFound, err)
@@ -55,9 +57,9 @@ func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		mongoCollection := mongoAccessCollection("articles", mongoClient)
+		mongoCollection := accessCollectionDB("articles", mongoClient)
 
-		article, err := mongoFindArticle(ctx, mongoCollection, articleId)
+		article, err := getArticleFromDB(ctx, mongoCollection, articleId)
 
 		if err != nil {
 			c.JSON(http.StatusNotFound, err)
@@ -73,9 +75,9 @@ func getProjectCount(r *gin.Engine, mongoClient *mongo.Client) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		mongoCollection := mongoAccessCollection("projects", mongoClient)
+		mongoCollection := accessCollectionDB("projects", mongoClient)
 
-		projectCount, err := mongoCountProjects(ctx, mongoCollection)
+		projectCount, err := getProjectCountFromDB(ctx, mongoCollection)
 
 		if err != nil {
 			c.JSON(http.StatusNotFound, err)

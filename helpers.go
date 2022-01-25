@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func createTimestamp(stringTime string) time.Time {
@@ -16,4 +19,14 @@ func createTimestamp(stringTime string) time.Time {
 	//fmt.Println(tm)
 
 	return tm
+}
+
+func importEnv() map[string]string {
+	var myEnv map[string]string
+	myEnv, err := godotenv.Read()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	return myEnv
 }

@@ -32,7 +32,7 @@ type Article struct {
 }
 
 // First step - Establish a client
-func mongoConnClient(ctx context.Context) *mongo.Client {
+func connectClientDB(ctx context.Context) *mongo.Client {
 	env := importEnv()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(
@@ -46,13 +46,13 @@ func mongoConnClient(ctx context.Context) *mongo.Client {
 }
 
 // Second step - Access the chosen collection
-func mongoAccessCollection(c string, client *mongo.Client) *mongo.Collection {
+func accessCollectionDB(c string, client *mongo.Client) *mongo.Collection {
 	collection := client.Database("hub").Collection(c)
 
 	return collection
 }
 
-func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, startPoint time.Time) ([]Project, error) {
+func getProjectsFromDB(ctx context.Context, collection *mongo.Collection, startPoint time.Time, requestedCount int64) ([]Project, error) {
 	options := options.Find().SetSort(bson.D{primitive.E{Key: "created_on", Value: -1}})
 
 	cursor, err := collection.Find(ctx, bson.D{
@@ -68,8 +68,9 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 		return projects, err
 	}
 
-	counter := 0
-	for cursor.Next(ctx) && counter != 3 {
+	var counter int64
+	counter = 0
+	for cursor.Next(ctx) && counter != requestedCount {
 
 		var project Project
 
@@ -82,7 +83,7 @@ func mongoFindThreeProjects(ctx context.Context, collection *mongo.Collection, s
 	return projects, err
 }
 
-func mongoFindArticle(ctx context.Context, collection *mongo.Collection, articleId string) (Article, error) {
+func getArticleFromDB(ctx context.Context, collection *mongo.Collection, articleId string) (Article, error) {
 	singleResult := collection.FindOne(ctx, bson.D{
 		primitive.E{Key: "link", Value: articleId},
 	})
@@ -94,7 +95,7 @@ func mongoFindArticle(ctx context.Context, collection *mongo.Collection, article
 	return article, err
 }
 
-func mongoCountProjects(ctx context.Context, collection *mongo.Collection) (int64, error) {
+func getProjectCountFromDB(ctx context.Context, collection *mongo.Collection) (int64, error) {
 	projectCount, err := collection.CountDocuments(ctx, bson.D{
 		primitive.E{},
 	})
