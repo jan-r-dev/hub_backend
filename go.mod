@@ -1,4 +1,4 @@
-module hub_backend
+module github.com/jan-r-dev/hub_backend
 
 go 1.16
 
