@@ -32,7 +32,7 @@ func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
 		c.Header("Access-Control-Allow-Origin", "*")
 
 		ts := createTimestamp(c.Param("time"))
-		count, err := strconv.ParseInt(c.Query("count"), 10, 0)
+		count, _ := strconv.ParseInt(c.Query("count"), 10, 0)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
