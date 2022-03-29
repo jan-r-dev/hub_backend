@@ -18,13 +18,30 @@ func main() {
 	r := gin.New()
 
 	go getProjects(r, mongoClient)
-	go getArticle(r, mongoClient)
+	go getArticle(r)
 	go getProjectCount(r, mongoClient)
 
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
 	r.Run(":8080")
+}
+
+func getArticle(r *gin.Engine) {
+	r.GET("/articles/:articleID", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		ctx := context.Background()
+
+		articleID := c.Param("articleID")
+
+		article, err := postgres(ctx, articleID)
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, err)
+		} else {
+			c.JSON(http.StatusOK, article)
+		}
+	})
 }
 
 func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
@@ -49,6 +66,26 @@ func getProjects(r *gin.Engine, mongoClient *mongo.Client) {
 
 }
 
+func getProjectCount(r *gin.Engine, mongoClient *mongo.Client) {
+	r.GET("/projects", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		mongoCollection := accessCollectionDB("projects", mongoClient)
+
+		projectCount, err := getProjectCountFromDB(ctx, mongoCollection)
+
+		if err != nil {
+			c.JSON(http.StatusNotFound, err)
+		} else {
+			c.JSON(http.StatusOK, projectCount)
+		}
+	})
+}
+
+/*
+MongoOld
 func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
 	r.GET("/articles/:articleId", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
@@ -68,21 +105,4 @@ func getArticle(r *gin.Engine, mongoClient *mongo.Client) {
 		}
 	})
 }
-
-func getProjectCount(r *gin.Engine, mongoClient *mongo.Client) {
-	r.GET("/projects", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		mongoCollection := accessCollectionDB("projects", mongoClient)
-
-		projectCount, err := getProjectCountFromDB(ctx, mongoCollection)
-
-		if err != nil {
-			c.JSON(http.StatusNotFound, err)
-		} else {
-			c.JSON(http.StatusOK, projectCount)
-		}
-	})
-}
+*/
