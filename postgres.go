@@ -9,10 +9,6 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type HubAPI interface {
-	endpoint()
-}
-
 type article struct {
 	Pk           int      `json:"pk,omitempty"`
 	Title        string   `json:"title,omitempty"`
@@ -23,12 +19,12 @@ type article struct {
 }
 
 type project struct {
-	Pk         int       `json:"pk,omitempty"`
-	Title      string    `json:"title,omitempty"`
-	Summary    string    `json:"summary,omitempty"`
-	ArticleUrl string    `json:"articleurl,omitempty"`
-	Created_on time.Time `json:"created_on,omitempty"`
-	Stack      []string  `json:"stack,omitempty"`
+	Pk          int       `json:"pk,omitempty"`
+	Title       string    `json:"title,omitempty"`
+	Summary     string    `json:"summary,omitempty"`
+	Article_url string    `json:"articleurl,omitempty"`
+	Created_on  time.Time `json:"created_on,omitempty"`
+	Stack       []string  `json:"stack,omitempty"`
 }
 
 func postgres(ctx context.Context, qs string) (pgx.Rows, error) {
@@ -78,7 +74,7 @@ func readRowsProject(rows pgx.Rows) ([]project, error) {
 			&p.Pk,
 			&p.Title,
 			&p.Summary,
-			&p.ArticleUrl,
+			&p.Article_url,
 			&p.Created_on,
 			&p.Stack,
 		)
