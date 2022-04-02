@@ -10,19 +10,19 @@ import (
 )
 
 type article struct {
-	Pk           int      `json:"pk,omitempty"`
-	Title        string   `json:"title,omitempty"`
-	Text_content []string `json:"text,omitempty"`
-	Image_url    []string `json:"images,omitempty"`
-	Snippet_url  []string `json:"snippets,omitempty"`
-	Source_url   []string `json:"sources,omitempty"`
+	Pk          int      `json:"pk,omitempty"`
+	Title       string   `json:"title,omitempty"`
+	Text        []string `json:"text,omitempty"`
+	Image_url   []string `json:"image_url,omitempty"`
+	Snippet_url []string `json:"snippet_url,omitempty"`
+	Source_url  []string `json:"source_url,omitempty"`
 }
 
 type project struct {
 	Pk          int       `json:"pk,omitempty"`
 	Title       string    `json:"title,omitempty"`
 	Summary     string    `json:"summary,omitempty"`
-	Article_url string    `json:"articleurl,omitempty"`
+	Article_url string    `json:"article_url,omitempty"`
 	Created_on  time.Time `json:"created_on,omitempty"`
 	Stack       []string  `json:"stack,omitempty"`
 }
@@ -52,7 +52,7 @@ func readRowsArticle(rows pgx.Rows) (article, error) {
 		errScan := rows.Scan(
 			&a.Pk,
 			&a.Title,
-			&a.Text_content,
+			&a.Text,
 			&a.Image_url,
 			&a.Snippet_url,
 			&a.Source_url,
