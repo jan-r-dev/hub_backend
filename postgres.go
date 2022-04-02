@@ -31,34 +31,26 @@ type project struct {
 	Stack      []string  `json:"stack,omitempty"`
 }
 
-func (a article) endpoint() {
-
-}
-
-func (p project) endpoint() {
-}
-
-func postgres(ctx context.Context, qs string, readRows func(pgx.Rows) (HubAPI, error)) (HubAPI, error) {
-	conn, errConn := pgx.Connect(ctx, os.Getenv("POSTGRES_DB"))
-	if errConn != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", errConn)
+func postgres(ctx context.Context, qs string) (pgx.Rows, error) {
+	conn, err := pgx.Connect(ctx, os.Getenv("POSTGRES_DB"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		conn.Close(ctx)
-		return article{}, errConn
+		return nil, err
 	}
 	defer conn.Close(ctx)
 
-	rows, errQuery := conn.Query(ctx, qs)
-	if errQuery != nil {
-		fmt.Fprintf(os.Stderr, "Error while executing query: %v\n", errQuery)
+	rows, err := conn.Query(ctx, qs)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error while executing query: %v\n", err)
 		rows.Close()
-		return article{}, errQuery
+		return nil, err
 	}
-	defer rows.Close()
 
-	return readRows(rows)
+	return rows, err
 }
 
-func readRowsArticle(rows pgx.Rows) (HubAPI, error) {
+func readRowsArticle(rows pgx.Rows) (article, error) {
 	a := article{}
 	for rows.Next() {
 		errScan := rows.Scan(
@@ -78,9 +70,10 @@ func readRowsArticle(rows pgx.Rows) (HubAPI, error) {
 	return a, nil
 }
 
-func readRowsProject(rows pgx.Rows) (HubAPI, error) {
-	p := project{}
+func readRowsProject(rows pgx.Rows) ([]project, error) {
+	ps := []project{}
 	for rows.Next() {
+		p := project{}
 		errScan := rows.Scan(
 			&p.Pk,
 			&p.Title,
@@ -91,9 +84,11 @@ func readRowsProject(rows pgx.Rows) (HubAPI, error) {
 		)
 		if errScan != nil {
 			fmt.Fprintf(os.Stderr, "Error while scanning rows in the Project table: %v\n", errScan)
-			return p, errScan
+			return ps, errScan
 		}
+
+		ps = append(ps, p)
 	}
 
-	return p, nil
+	return ps, nil
 }
