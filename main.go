@@ -26,7 +26,10 @@ func getProjects(r *gin.Engine) {
 
 		rows, err := postgres(
 			ctx,
-			"select project.pk, title, summary, article_url, created_date, stack from project inner join title on title_fk = title.pk order by pk asc;",
+			`select project.pk, title, summary, article_url, created_date, stack from project
+			inner join title on title_fk = title.pk
+			inner join article on article_fk = article.pk
+			order by pk asc;`,
 		)
 		if err != nil {
 			c.JSON(http.StatusNotFound, err)
@@ -45,11 +48,13 @@ func getArticle(r *gin.Engine) {
 	r.GET("/articles/:articleUrl", func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		ctx := context.Background()
-		articleUrl := c.Param("articleUrl")
+		articleUrl := "'" + c.Param("articleUrl") + "'"
 
 		rows, err := postgres(
 			ctx,
-			("select article.pk, title, text_content, image_url, snippet_url, source_url from article inner join title on article.title_fk = title.pk where article.pk = " + articleUrl),
+			(`select article.pk, title, text_content, image_url, snippet_url, source_url from article
+			inner join title on article.title_fk = title.pk
+			where article_url = ` + articleUrl),
 		)
 		if err != nil {
 			c.JSON(http.StatusNotFound, err)
@@ -63,5 +68,3 @@ func getArticle(r *gin.Engine) {
 		}
 	})
 }
-
-// Adjust article to search by article-url instead
